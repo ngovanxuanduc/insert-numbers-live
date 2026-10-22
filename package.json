@@ -1,0 +1,81 @@
+{
+  "name": "insert-numbers",
+  "displayName": "Insert Numbers",
+  "description": "Chèn dãy số, chữ cái, ngày hoặc danh sách vào nhiều cursor, có preview trước khi chèn.",
+  "version": "0.1.3",
+  "publisher": "local",
+  "icon": "images/icon.png",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "insertNumbers.insert",
+        "title": "Chèn dãy vào các cursor",
+        "category": "Insert Numbers"
+      },
+      {
+        "command": "insertNumbers.clearHistory",
+        "title": "Xoá lịch sử",
+        "category": "Insert Numbers"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "insertNumbers.insert",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n",
+        "when": "editorTextFocus && !editorReadonly"
+      }
+    ],
+    "configuration": {
+      "title": "Insert Numbers",
+      "properties": {
+        "insertNumbers.order": {
+          "type": "string",
+          "enum": [
+            "position",
+            "selection"
+          ],
+          "enumDescriptions": [
+            "Đánh số từ trên xuống dưới theo vị trí trong file.",
+            "Đánh số theo thứ tự bạn tạo cursor (thứ tự click)."
+          ],
+          "default": "position",
+          "description": "Thứ tự đánh số các cursor."
+        },
+        "insertNumbers.replaceSelection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Khi cursor đang bôi đen text: true thì thay thế text đó, false thì chèn vào sau."
+        },
+        "insertNumbers.historySize": {
+          "type": "number",
+          "default": 20,
+          "minimum": 0,
+          "description": "Số lần nhập gần nhất được lưu để chọn lại."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test out/*.test.js",
+    "package": "vsce package --allow-missing-repository --skip-license"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "~1.94.0",
+    "@vscode/vsce": "^3.2.0",
+    "typescript": "^5.6.0"
+  }
+}
