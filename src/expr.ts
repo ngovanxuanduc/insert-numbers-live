@@ -96,7 +96,7 @@ export const FUNCTIONS: Record<string, Fn> = {
     max: 2,
     check: ([, classes]) =>
       typeof classes === 'string' && !charset(classes)
-        ? `randstr: lớp ký tự chỉ gồm ${CLASS_LETTERS.split('').join(', ')}.`
+        ? `randstr: character classes are ${CLASS_LETTERS.split('').join(', ')}.`
         : undefined,
     // Lớp ký tự tính theo cursor mà sai thì ra chuỗi rỗng, không làm hỏng cả lần chèn.
     random: (rng, len, classes = DEFAULT_CLASSES) => randomString(rng, toNum(len), charset(toStr(classes))),
@@ -211,7 +211,7 @@ function tokenize(src: string): Token[] {
     } else {
       const op = OPS.find((o) => rest.startsWith(o));
       if (!op) {
-        throw new Error(`Ký tự lạ "${rest[0]}" trong biểu thức.`);
+        throw new Error(`Unexpected character "${rest[0]}" in expression.`);
       }
       tokens.push({ t: 'op', v: op });
       p += op.length;
@@ -265,7 +265,7 @@ export function compile(src: string): Compiled {
   };
   const expect = (v: string) => {
     if (!isOp(v)) {
-      throw new Error(`Thiếu "${v}" trong biểu thức.`);
+      throw new Error(`Missing "${v}" in expression.`);
     }
     p++;
   };
@@ -286,7 +286,7 @@ export function compile(src: string): Compiled {
         }
         const variable = VARIABLES[t.v];
         if (!variable) {
-          throw new Error(`Không có biến "${t.v}". Dùng: ${Object.keys(VARIABLES).join(', ')}.`);
+          throw new Error(`Unknown variable "${t.v}". Available: ${Object.keys(VARIABLES).join(', ')}.`);
         }
         return variable;
       }
@@ -306,16 +306,16 @@ export function compile(src: string): Compiled {
           }
           return (e) => Number(!truthy(operand(e)));
         }
-        throw new Error(`Không mong đợi "${t.v}" trong biểu thức.`);
+        throw new Error(`Unexpected "${t.v}" in expression.`);
       case 'end':
-        throw new Error('Biểu thức bị thiếu.');
+        throw new Error('Expression is incomplete.');
     }
   };
 
   const call = (name: string): Compiled => {
     const fn = FUNCTIONS[name];
     if (!fn) {
-      throw new Error(`Không có hàm "${name}". Dùng: ${Object.keys(FUNCTIONS).join(', ')}.`);
+      throw new Error(`Unknown function "${name}". Available: ${Object.keys(FUNCTIONS).join(', ')}.`);
     }
     expect('(');
     const args: Compiled[] = [];
@@ -326,8 +326,8 @@ export function compile(src: string): Compiled {
     }
     expect(')');
     if (args.length < fn.min || args.length > fn.max) {
-      const want = fn.min === fn.max ? `${fn.min}` : fn.max === Infinity ? `ít nhất ${fn.min}` : `${fn.min}-${fn.max}`;
-      throw new Error(`Hàm ${name}() cần ${want} tham số.`);
+      const want = fn.min === fn.max ? `${fn.min}` : fn.max === Infinity ? `at least ${fn.min}` : `${fn.min}-${fn.max}`;
+      throw new Error(`${name}() takes ${want} argument${want === '1' ? '' : 's'}.`);
     }
     const problem = fn.check?.(args.map((a) => constants.get(a)));
     if (problem) {
@@ -371,7 +371,7 @@ export function compile(src: string): Compiled {
   const result = expr(0);
   if (peek().t !== 'end') {
     const t = peek() as { v: unknown };
-    throw new Error(`Thừa "${t.v}" ở cuối biểu thức.`);
+    throw new Error(`Unexpected "${t.v}" at end of expression.`);
   }
   return result;
 }

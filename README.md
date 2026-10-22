@@ -1,133 +1,129 @@
-# Insert Numbers
+# Insert Numbers Live
 
-Extension VS Code để chèn dãy số (hoặc chữ cái, ngày, danh sách) vào nhiều cursor cùng lúc.
-Khác với bản trên Marketplace: bấm phím tắt **không chèn ngay**. Extension mở ô nhập và hiện preview mờ tại từng cursor. Bấm Enter mới chèn, bấm Esc thì file không bị đụng tới.
+Insert numbers, letters, dates, lists, random codes or computed values at multiple cursors, with a **live preview** before anything touches your file.
 
-## Cách dùng
+Pressing the shortcut does not insert right away. Instead, it opens an input box and shows the values faintly at each cursor as you type. Press **Enter** to insert, or **Esc** and nothing changes.
 
-1. Tạo nhiều cursor (Alt+Click, `Cmd+Alt+↓`, `Cmd+D`…).
-2. Bấm `Cmd+Alt+N` (Windows/Linux: `Ctrl+Alt+N`).
-3. Gõ cú pháp. Preview cập nhật ngay trong editor, dòng đầu của ô nhập hiện vài giá trị đầu tiên.
-4. Enter để chèn. Undo (`Cmd+Z`) một lần là về lại như cũ.
+![Insert Numbers Live demo](images/demo.gif)
 
-Để trống rồi Enter thì chèn 1, 2, 3… Bên dưới ô nhập là lịch sử các lần trước; dùng phím mũi tên để chọn lại (preview cũng đổi theo).
+## Usage
 
-## Cú pháp
+1. Place multiple cursors (Alt+Click, `Cmd+Alt+↓` / `Ctrl+Alt+↓`, `Cmd+D` / `Ctrl+D`…).
+2. Press `Cmd+Alt+N` (macOS) or `Ctrl+Alt+N` (Windows/Linux), or run **Insert Numbers Live: Insert Sequence at Cursors** from the Command Palette.
+3. Type a pattern. The editor previews the result, and the first row of the input box shows the first few values.
+4. Press **Enter**. A single **Undo** reverts the whole insertion.
 
-### Dãy cơ bản
+Press Enter on an empty input to insert 1, 2, 3… Your previous inputs are listed below the input box. Use the arrow keys to pick one, and the preview follows.
 
-Dạng chung: `start` hoặc `start:step`.
+> **Note:** On Windows/Linux, `Ctrl+Alt+N` is also used by Code Runner. If you have both installed, rebind one of them in **Keyboard Shortcuts**.
 
-| Nhập | Kết quả | Ghi chú |
+## Syntax
+
+### Basic sequences
+
+General form: `start` or `start:step`.
+
+| Input | Result | Notes |
 |---|---|---|
 | `1` | 1, 2, 3… | |
-| `10:5` | 10, 15, 20… | step có thể âm: `10:-1` |
-| `001` | 001, 002, 003… | số 0 ở đầu quy định độ rộng pad |
-| `1.5:0.25` | 1.50, 1.75, 2.00… | số chữ số thập phân lấy theo start/step |
-| `0x0a:2` | 0x0a, 0x0c, 0x0e… | độ rộng và chữ hoa/thường giữ theo start; step có thể viết `0x10` |
-| `a` / `A:2` | a, b, c… / A, C, E… | sau `z` là `aa`, `ab` như cột Excel |
-| `#I` / `#x:10` | I, II, III… / x, xx, xxx… | số La Mã (hoa/thường theo start) |
-| `2026-01-31:7` | 2026-01-31, 2026-02-07… | step tính theo ngày |
-| `Mon,Tue,Wed` | Mon, Tue, Wed, Mon… | danh sách lặp vòng |
+| `10:5` | 10, 15, 20… | step may be negative: `10:-1` |
+| `001` | 001, 002, 003… | leading zeros set the padding width |
+| `1.5:0.25` | 1.50, 1.75, 2.00… | decimal places follow start/step; no floating-point noise |
+| `0x0a:2` | 0x0a, 0x0c, 0x0e… | width and letter case follow start; step may be hex (`0x10`) |
+| `a` / `A:2` | a, b, c… / A, C, E… | after `z` comes `aa`, `ab` (spreadsheet columns) |
+| `#I` / `#x:10` | I, II, III… / x, xx, xxx… | Roman numerals, case follows start |
+| `2026-01-31:7` | 2026-01-31, 2026-02-07… | step is in days |
+| `Mon,Tue,Wed` | Mon, Tue, Wed, Mon… | list, cycles |
 
-Hậu tố thêm vào sau dãy cơ bản:
+Suffixes for basic sequences:
 
-| Nhập | Kết quả | Ý nghĩa |
+| Input | Result | Meaning |
 |---|---|---|
-| `1*3` | 1, 1, 1, 2, 2, 2… | mỗi giá trị lặp 3 lần |
-| `1%3` | 1, 2, 3, 1, 2, 3… | quay vòng sau 3 giá trị |
-| `a*2%2` | a, a, b, b, a, a… | dùng chung được |
+| `1*3` | 1, 1, 1, 2, 2, 2… | repeat each value 3 times |
+| `1%3` | 1, 2, 3, 1, 2, 3… | wrap around after 3 values |
+| `a*2%2` | a, a, b, b, a, a… | combinable |
 
-### Mã ngẫu nhiên
+### Random codes
 
-| Nhập | Ví dụ | Ghi chú |
+| Input | Example | Notes |
 |---|---|---|
-| `?6` | `K7P2XQ` | 6 ký tự A-Z và 0-9 |
-| `?8d` | `40912377` | lớp ký tự: `d` số, `a` chữ thường, `A` chữ hoa, `x` hex thường, `X` hex hoa; ghép được, ví dụ `?10aAd` |
-| `?uuid` | `3f2b…-4…` | UUID v4 |
+| `?6` | `K7P2XQ` | 6 characters from A-Z and 0-9 |
+| `?8d` | `40912377` | character classes: `d` digits, `a` lowercase, `A` uppercase, `x` lowercase hex, `X` uppercase hex; combine them, e.g. `?10aAd` |
+| `?uuid` | `3f2b9c1e-…` | UUID v4 |
 
-- Các cursor trong cùng một lần chèn **không bị trùng mã**: trùng thì tự sinh lại, trừ khi số cursor vượt quá số tổ hợp có thể.
-- Preview không đổi trong lúc gõ, và giá trị chèn vào đúng bằng giá trị đang preview. Bấm nút 🔄 trên ô nhập để sinh bộ khác.
-- Random này không dùng cho mục đích bảo mật (token, mật khẩu).
+- Codes never repeat across cursors in one insertion. If two cursors get the same code, a new one is generated. Repeats are only possible when there are more cursors than possible codes.
+- The preview stays stable while you type, and Enter inserts exactly what you see. Click the **↻** button in the input box to generate a new set.
+- Random values are not cryptographically secure, so don't use them for passwords or tokens.
 
-### Template
+### Templates
 
-Có dấu `{` hoặc `}` thì cả chuỗi là template: text giữ nguyên (kể cả khoảng trắng), mỗi `{…}` là một dãy.
+If the input contains `{` or `}`, it is treated as a template. Text is kept as-is, including spaces, and each `{…}` is a sequence.
 
-| Nhập | Kết quả |
+| Input | Result |
 |---|---|
 | `order_{?6}` | order_K7P2XQ, order_9QZ1MB… |
 | `item_{001}` | item_001, item_002… |
-| `{}. ` | `1. `, `2. `… (`{}` là `{1}`) |
+| `{}. ` | `1. `, `2. `… (`{}` means `{1}`) |
 | `{A}{1}` | A1, B2, C3… |
 | `{Mon,Tue}-{1*2}` | Mon-1, Tue-1, Mon-2, Tue-2… |
 | `row[{=i*2}] = {#I};` | row[0] = I;, row[2] = II;… |
-| `{{x}} = {1}` | {x} = 1, {x} = 2… (`{{` và `}}` để ghi dấu ngoặc) |
+| `{{x}} = {1}` | {x} = 1, {x} = 2… (`{{` and `}}` for literal braces) |
 
-### Biểu thức
+### Expressions
 
-Bắt đầu bằng `=` (hoặc `{=…}` trong template).
+Start with `=`, or use `{=…}` inside a template.
 
-| Biến | Ý nghĩa |
+| Variable | Meaning |
 |---|---|
-| `i` / `n` | số thứ tự bắt đầu từ 0 / từ 1 |
-| `count` | tổng số cursor |
-| `line`, `col` | dòng, cột của cursor (từ 1) |
-| `s` / `x` | text đang bôi đen tại cursor / text đó đổi ra số |
+| `i` / `n` | index starting at 0 / at 1 |
+| `count` | number of cursors |
+| `line`, `col` | cursor line and column (1-based) |
+| `s` / `x` | selected text at the cursor / that text as a number |
 
-Toán tử: `+ - * / % **`, so sánh `== != < <= > >=`, `&& || !`, `điều_kiện ? a : b`. `+` nối chuỗi nếu có một vế là chuỗi (`"..."` hoặc `'...'`). `%` luôn ra số không âm.
+**Operators:**
+- Arithmetic: `+ - * / % **`
+- Comparison: `== != < <= > >=`
+- Logic: `&& || !`
+- Conditional: `cond ? a : b`
 
-Hàm: `abs floor ceil round(v, chữ_số) sqrt min max pow`, `pad(v, độ_rộng, ký_tự="0")`, `hex(v, độ_rộng)` `bin` `oct`, `roman(v)`, `alpha(v)` (1 → a), `upper lower len num`, `date("2026-01-01", số_ngày)`, `rand(min, max)`, `randstr(độ_dài, "Ad")`, `uuid()`.
+`+` concatenates when either side is a string (`"..."` or `'...'`), and `%` always returns a non-negative result.
 
-| Nhập | Kết quả |
+**Functions:**
+- Math: `abs`, `floor`, `ceil`, `round(v, digits)`, `sqrt`, `min`, `max`, `pow`
+- Formatting: `pad(v, width, char="0")`, `hex(v, width)`, `bin`, `oct`, `roman(v)`, `alpha(v)` (1 → a)
+- Text: `upper`, `lower`, `len`, `num`
+- Dates: `date("2026-01-01", days)`
+- Random: `rand(min, max)`, `randstr(length, "Ad")`, `uuid()`
+
+| Input | Result |
 |---|---|
 | `=i*i` | 0, 1, 4, 9… |
 | `=2**n` | 2, 4, 8, 16… |
 | `=pad(n*5, 3)` | 005, 010, 015… |
 | `=i%2 ? "odd" : "even"` | even, odd, even… |
-| `=x + 1` | bôi đen các số rồi tăng mỗi số lên 1 |
-| `=x * 1000` | đổi giây sang mili giây cho các số đang bôi đen |
-| `="L" + line` | L12, L13… (số dòng) |
+| `=x + 1` | select numbers, then increment each one |
+| `=x * 1000` | convert selected seconds to milliseconds |
+| `="L" + line` | L12, L13… (line numbers) |
 
-### Điều kiện dừng
+### Stop condition
 
-`{!điều_kiện}` trong template: từ cursor đầu tiên thoả điều kiện trở đi thì không chèn gì nữa (các cursor đó giữ nguyên).
+Add `{!condition}` to a template. From the first cursor where the condition is true, nothing more is inserted. Those cursors are left untouched.
 
-| Nhập | Kết quả với 6 cursor |
+| Input | Result with 6 cursors |
 |---|---|
-| `{1}{!i >= 3}` | 1, 2, 3, (trống), (trống), (trống) |
-| `{10:10}{!n*10 > 25}` | 10, 20, (trống)… |
+| `{1}{!i >= 3}` | 1, 2, 3, (none), (none), (none) |
+| `{10:10}{!n*10 > 25}` | 10, 20, (none)… |
 
-Cú pháp sai thì dòng đầu hiện icon lỗi kèm lý do, và Enter không làm gì cả.
+If the pattern is invalid, the first row shows an error icon with the reason, and Enter does nothing.
 
 ## Settings
 
-| Setting | Mặc định | Ý nghĩa |
+| Setting | Default | Description |
 |---|---|---|
-| `insertNumbers.order` | `position` | `position`: đánh số từ trên xuống theo vị trí trong file. `selection`: theo thứ tự tạo cursor. |
-| `insertNumbers.replaceSelection` | `true` | Cursor đang bôi đen text thì thay thế text đó (`false`: chèn vào sau). |
-| `insertNumbers.historySize` | `20` | Số lần nhập được nhớ. Xoá bằng lệnh **Insert Numbers: Xoá lịch sử**. |
+| `insertNumbersLive.order` | `position` | `position`: number cursors top to bottom. `selection`: in the order the cursors were created. |
+| `insertNumbersLive.replaceSelection` | `true` | When text is selected at a cursor, replace it (`false`: insert after it). |
+| `insertNumbersLive.historySize` | `20` | How many recent inputs to remember. Clear them with **Insert Numbers Live: Clear History**. |
 
-## Cài đặt
+## License
 
-```bash
-./build.sh --install     # nâng version, build .vsix và cài vào VS Code
-```
-
-Nếu đang cài extension Insert Numbers cũ thì gỡ nó đi, vì hai bản dùng chung phím tắt `Cmd+Alt+N`.
-
-## Phát triển
-
-```bash
-npm install
-npm test                 # compile và chạy unit test cho phần parse cú pháp
-```
-
-Mở thư mục này trong VS Code rồi bấm F5 (**Run Extension**) để chạy thử trong cửa sổ Extension Development Host.
-
-| File | Nội dung |
-|---|---|
-| `src/sequence.ts` | Parse chuỗi nhập (dãy cơ bản, hậu tố, template, điều kiện dừng) thành dãy giá trị. Không phụ thuộc `vscode` nên test được bằng `node --test`. |
-| `src/expr.ts` | Parser và bộ tính biểu thức `=…`, tự viết, không dùng `eval`. |
-| `src/random.ts` | Random có seed, để preview và giá trị chèn vào giống nhau. |
-| `src/extension.ts` | Lệnh, QuickPick, preview bằng decoration, chèn bằng một lần `editor.edit`. |
+[MIT](LICENSE)

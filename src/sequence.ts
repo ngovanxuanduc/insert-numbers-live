@@ -1,5 +1,5 @@
 import { compile, Env, fromRoman, toAlpha, toRoman, toStr, truthy } from './expr';
-import { charset, CLASS_LETTERS, newSite, randomString, resetSites, rngFor, siteCount, uuid } from './random';
+import { charset, newSite, randomString, resetSites, rngFor, siteCount, uuid } from './random';
 
 /**
  * Phân tích chuỗi người dùng nhập thành một dãy giá trị.
@@ -113,7 +113,7 @@ function parseTemplate(input: string): ParseResult {
       continue;
     }
     if (c === '}') {
-      throw new Error('Dấu "}" bị lẻ. Muốn ghi dấu } thì dùng "}}".');
+      throw new Error('Unmatched "}". Use "}}" for a literal }.');
     }
     if (c !== '{') {
       literal += c;
@@ -122,13 +122,13 @@ function parseTemplate(input: string): ParseResult {
     }
     const close = input.indexOf('}', p + 1);
     if (close < 0) {
-      throw new Error('Thiếu "}" đóng. Muốn ghi dấu { thì dùng "{{".');
+      throw new Error('Missing closing "}". Use "{{" for a literal {.');
     }
     const spec = input.slice(p + 1, close).trim();
     p = close + 1;
     if (spec.startsWith('!')) {
       if (stop) {
-        throw new Error('Chỉ được có một {!điều kiện}.');
+        throw new Error('Only one {!condition} is allowed.');
       }
       const cond = compile(spec.slice(1));
       stop = (env) => truthy(cond(env));
@@ -165,10 +165,10 @@ function parseSpec(text: string): ParseResult {
     const length = Number(rand[1]);
     const chars = charset(rand[2]);
     if (length < 1) {
-      return fail('Độ dài mã ngẫu nhiên phải lớn hơn 0.');
+      return fail('Random length must be greater than 0.');
     }
     if (!chars) {
-      return fail(`Lớp ký tự chỉ gồm ${CLASS_LETTERS.split('').join(', ')} (d số, a chữ thường, A chữ hoa, x/X hex).`);
+      return fail(`Character classes: d digits, a lowercase, A uppercase, x/X hex (got "${rand[2]}").`);
     }
     const site = newSite();
     return { ok: true, seq: { kind: 'random', at: (env) => randomString(rngOf(env, site), length, chars) } };
@@ -182,7 +182,7 @@ function parseSpec(text: string): ParseResult {
     for (const [, op, k] of m[2].matchAll(/([*%])\s*(\d+)/g)) {
       const v = Number(k);
       if (v < 1) {
-        return fail(`"${op}${k}" phải lớn hơn 0.`);
+        return fail(`"${op}${k}" must be greater than 0.`);
       }
       if (op === '*') {
         repeat = v;
@@ -212,11 +212,11 @@ function parseBase(text: string): GenResult {
 
   const parts = text.split(':');
   if (parts.length > 2) {
-    return fail('Chỉ dùng tối đa một dấu ":" (start:step).');
+    return fail('Use at most one ":" (start:step).');
   }
   const [start, stepText] = parts.map((s) => s.trim());
   if (stepText === '') {
-    return fail('Thiếu step sau dấu ":".');
+    return fail('Missing step after ":".');
   }
 
   const hex = HEX.exec(start);
@@ -238,14 +238,14 @@ function parseBase(text: string): GenResult {
   if (LETTERS.test(start)) {
     return parseLetters(start, stepText);
   }
-  return fail(`Không hiểu "${start}". Thử: 1, 10:5, 001, 0x0a, a, #I, 2026-01-01, Mon,Tue, ?6, =i*2, item_{1}`);
+  return fail(`Cannot parse "${start}". Try: 1, 10:5, 001, 0x0a, a, #I, 2026-01-01, Mon,Tue, ?6, =i*2, item_{1}`);
 }
 
 function parseDecimal(m: RegExpExecArray, stepText: string | undefined): GenResult {
   const [, sign, intPart, frac = ''] = m;
   const step = stepText === undefined ? 1 : Number(stepText);
   if (stepText !== undefined && !DECIMAL.test(stepText)) {
-    return fail(`Step "${stepText}" không phải số.`);
+    return fail(`Step "${stepText}" is not a number.`);
   }
   const places = Math.max(frac.length, decimals(stepText));
   const width = intPart.length > 1 && intPart.startsWith('0') ? intPart.length : 0;
@@ -271,7 +271,7 @@ function parseHex(m: RegExpExecArray, stepText: string | undefined): GenResult {
     } else if (INT.test(stepText)) {
       step = Number(stepText);
     } else {
-      return fail(`Step "${stepText}" phải là số nguyên hoặc hex.`);
+      return fail(`Step "${stepText}" must be an integer or hex.`);
     }
   }
   const upper = /[A-F]/.test(digits);
@@ -289,7 +289,7 @@ function parseHex(m: RegExpExecArray, stepText: string | undefined): GenResult {
 function parseLetters(start: string, stepText: string | undefined): GenResult {
   const step = parseIntStep(stepText);
   if (step === undefined) {
-    return fail(`Step "${stepText}" phải là số nguyên.`);
+    return fail(`Step "${stepText}" must be an integer.`);
   }
   const upper = start === start.toUpperCase();
   const base = lettersToIndex(start.toLowerCase());
@@ -302,11 +302,11 @@ function parseLetters(start: string, stepText: string | undefined): GenResult {
 function parseRoman(start: string, stepText: string | undefined): GenResult {
   const step = parseIntStep(stepText);
   if (step === undefined) {
-    return fail(`Step "${stepText}" phải là số nguyên.`);
+    return fail(`Step "${stepText}" must be an integer.`);
   }
   const base = fromRoman(start);
   if (Number.isNaN(base)) {
-    return fail(`"${start}" không phải số La Mã hợp lệ.`);
+    return fail(`"${start}" is not a valid Roman numeral.`);
   }
   const upper = start === start.toUpperCase();
   return gen('roman', (i) => {
@@ -318,14 +318,14 @@ function parseRoman(start: string, stepText: string | undefined): GenResult {
 function parseDate(m: RegExpExecArray, stepText: string | undefined): GenResult {
   const step = parseIntStep(stepText);
   if (step === undefined) {
-    return fail(`Step "${stepText}" phải là số ngày (số nguyên).`);
+    return fail(`Step "${stepText}" must be a whole number of days.`);
   }
   const [, y, mo, d] = m.map(Number);
   // Dùng UTC để không bị lệch ngày khi qua giờ mùa hè.
   const base = Date.UTC(y, mo - 1, d);
   const check = new Date(base);
   if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d) {
-    return fail(`Ngày "${m[0]}" không tồn tại.`);
+    return fail(`Date "${m[0]}" does not exist.`);
   }
   return gen('date', (i) => new Date(base + step * i * DAY_MS).toISOString().slice(0, 10));
 }

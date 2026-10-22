@@ -17,7 +17,7 @@ interface Target {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  const config = () => vscode.workspace.getConfiguration('insertNumbers');
+  const config = () => vscode.workspace.getConfiguration('insertNumbersLive');
 
   // Giá trị preview hiện mờ sau cursor; text sắp bị thay thì gạch ngang.
   const ghost = vscode.window.createTextEditorDecorationType({
@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     // Không dùng registerTextEditorCommand vì editor của nó chỉ hợp lệ trong lúc callback chạy đồng bộ.
-    vscode.commands.registerCommand('insertNumbers.insert', async () => {
+    vscode.commands.registerCommand('insertNumbersLive.insert', async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         return;
@@ -81,7 +81,7 @@ export function activate(context: vscode.ExtensionContext): void {
         values.forEach((v, k) => b.replace(targets[k].range, v));
       });
       if (!applied) {
-        vscode.window.showWarningMessage('Insert Numbers: file đã thay đổi trong lúc nhập, chưa chèn được.');
+        vscode.window.showWarningMessage('Insert Numbers Live: the document changed while you were typing, nothing was inserted.');
         return;
       }
       // Template giữ nguyên khoảng trắng đầu/cuối vì nó là một phần của text chèn vào.
@@ -91,9 +91,9 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
-    vscode.commands.registerCommand('insertNumbers.clearHistory', async () => {
+    vscode.commands.registerCommand('insertNumbersLive.clearHistory', async () => {
       await context.globalState.update(HISTORY_KEY, []);
-      vscode.window.showInformationMessage('Insert Numbers: đã xoá lịch sử.');
+      vscode.window.showInformationMessage('Insert Numbers Live: history cleared.');
     }),
   );
 }
@@ -130,8 +130,8 @@ function pickInput(
 ): Promise<string | undefined> {
   return new Promise((resolve) => {
     const qp = vscode.window.createQuickPick<InputItem>();
-    qp.title = `Insert Numbers (${targets.length} cursor)`;
-    qp.placeholder = 'Ví dụ: 1 · 10:5 · 001 · 0x0a · a · #I · 2026-01-01:7 · Mon,Tue · 1*2 · ?6 · =i*i · order_{?6}';
+    qp.title = `Insert Numbers Live (${targets.length} ${targets.length === 1 ? 'cursor' : 'cursors'})`;
+    qp.placeholder = 'e.g. 1 · 10:5 · 001 · 0x0a · a · #I · 2026-01-01:7 · Mon,Tue · 1*2 · ?6 · =i*i · order_{?6}';
     qp.matchOnDescription = false;
 
     const envs = targets.map((t) => t.env);
@@ -143,7 +143,7 @@ function pickInput(
     reseed();
     const reroll: vscode.QuickInputButton = {
       iconPath: new vscode.ThemeIcon('refresh'),
-      tooltip: 'Sinh lại giá trị random',
+      tooltip: 'Re-roll random values',
     };
     qp.buttons = [reroll];
 

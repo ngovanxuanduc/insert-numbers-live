@@ -1,67 +1,90 @@
 {
-  "name": "insert-numbers",
-  "displayName": "Insert Numbers",
-  "description": "Chèn dãy số, chữ cái, ngày hoặc danh sách vào nhiều cursor, có preview trước khi chèn.",
-  "version": "0.1.3",
-  "publisher": "local",
+  "name": "insert-numbers-live",
+  "displayName": "Insert Numbers Live",
+  "description": "Insert numbers, letters, dates, lists, random codes or expressions at multiple cursors, with a live preview before anything is inserted.",
+  "version": "1.0.1",
+  "publisher": "ducnvx",
   "icon": "images/icon.png",
-  "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ngovanxuanduc/insert-numbers-live.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ngovanxuanduc/insert-numbers-live/issues"
+  },
+  "homepage": "https://github.com/ngovanxuanduc/insert-numbers-live#readme",
   "engines": {
     "vscode": "^1.94.0"
   },
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "insert numbers",
+    "multi-cursor",
+    "multiple cursors",
+    "sequence",
+    "increment",
+    "enumerate",
+    "numbering",
+    "random",
+    "uuid",
+    "template"
+  ],
+  "galleryBanner": {
+    "color": "#3B4FD8",
+    "theme": "dark"
+  },
   "main": "./out/extension.js",
   "activationEvents": [],
   "contributes": {
     "commands": [
       {
-        "command": "insertNumbers.insert",
-        "title": "Chèn dãy vào các cursor",
-        "category": "Insert Numbers"
+        "command": "insertNumbersLive.insert",
+        "title": "Insert Sequence at Cursors",
+        "category": "Insert Numbers Live"
       },
       {
-        "command": "insertNumbers.clearHistory",
-        "title": "Xoá lịch sử",
-        "category": "Insert Numbers"
+        "command": "insertNumbersLive.clearHistory",
+        "title": "Clear History",
+        "category": "Insert Numbers Live"
       }
     ],
     "keybindings": [
       {
-        "command": "insertNumbers.insert",
+        "command": "insertNumbersLive.insert",
         "key": "ctrl+alt+n",
         "mac": "cmd+alt+n",
         "when": "editorTextFocus && !editorReadonly"
       }
     ],
     "configuration": {
-      "title": "Insert Numbers",
+      "title": "Insert Numbers Live",
       "properties": {
-        "insertNumbers.order": {
+        "insertNumbersLive.order": {
           "type": "string",
           "enum": [
             "position",
             "selection"
           ],
           "enumDescriptions": [
-            "Đánh số từ trên xuống dưới theo vị trí trong file.",
-            "Đánh số theo thứ tự bạn tạo cursor (thứ tự click)."
+            "Number cursors top to bottom by their position in the document.",
+            "Number cursors in the order they were created (click order)."
           ],
           "default": "position",
-          "description": "Thứ tự đánh số các cursor."
+          "description": "Order in which cursors are numbered."
         },
-        "insertNumbers.replaceSelection": {
+        "insertNumbersLive.replaceSelection": {
           "type": "boolean",
           "default": true,
-          "description": "Khi cursor đang bôi đen text: true thì thay thế text đó, false thì chèn vào sau."
+          "description": "When a cursor has text selected: replace it (true) or insert after it (false)."
         },
-        "insertNumbers.historySize": {
+        "insertNumbersLive.historySize": {
           "type": "number",
           "default": 20,
           "minimum": 0,
-          "description": "Số lần nhập gần nhất được lưu để chọn lại."
+          "description": "Number of recent inputs remembered for reuse."
         }
       }
     }
@@ -70,7 +93,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node --test out/*.test.js",
-    "package": "vsce package --allow-missing-repository --skip-license"
+    "package": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
